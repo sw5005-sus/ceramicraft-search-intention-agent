@@ -21,9 +21,6 @@ COPY src src
 RUN --mount=type=cache,target=/root/.m2/repository \
     chmod +x mvnw && ./mvnw package -DskipTests -B
 
-# 4) 解压分层 JAR（Spring Boot Layered Jar）
-RUN java -Djarmode=tools -jar target/*.jar extract --layers --destination extracted
-
 # ==================== Stage 2: 运行 ====================
 FROM eclipse-temurin:17-jre
 
@@ -33,11 +30,8 @@ RUN groupadd --system appgroup && \
 
 WORKDIR /app
 
-# 按变更频率从低到高拷贝各层（最大化 Docker 缓存命中）
-COPY --from=builder /build/extracted/dependencies/ ./
-COPY --from=builder /build/extracted/spring-boot-loader/ ./
-COPY --from=builder /build/extracted/snapshot-dependencies/ ./
-COPY --from=builder /build/extracted/application/ ./
+# 拷贝构建产物
+COPY --from=builder --chown=appuser:appgroup /build/target/ceramicraft-search-intention-agent-*.jar app.jar
 
 # 切换到非 root 用户
 USER appuser
@@ -59,5 +53,5 @@ ENV JAVA_OPTS="-XX:+UseG1GC \
 ENV SPRING_PROFILES_ACTIVE=prod
 
 
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS} -jar /app/app.jar"]
 
