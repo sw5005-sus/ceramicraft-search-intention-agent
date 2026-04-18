@@ -21,9 +21,6 @@ COPY src src
 RUN --mount=type=cache,target=/root/.m2/repository \
     chmod +x mvnw && ./mvnw package -DskipTests -B
 
-# 4) 解压分层 JAR（Spring Boot 3.2+ Layered Jar）
-RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
-
 # ==================== Stage 2: 运行 ====================
 FROM eclipse-temurin:17-jre
 
@@ -33,8 +30,8 @@ RUN groupadd --system appgroup && \
 
 WORKDIR /app
 
-# 拷贝解压后的应用（Spring Boot 3.2+ extract 输出结构）
-COPY --from=builder /build/extracted/ ./
+# 拷贝构建产物
+COPY --from=builder --chown=appuser:appgroup /build/target/ceramicraft-search-intention-agent-*.jar app.jar
 
 # 切换到非 root 用户
 USER appuser
@@ -44,7 +41,7 @@ EXPOSE 8070
 
 # 健康检查（依赖 Actuator /actuator/health 端点）
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8070/search-agent/actuator/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8070/actuator/health || exit 1
 
 # JVM 调优参数
 ENV JAVA_OPTS="-XX:+UseG1GC \
@@ -56,5 +53,5 @@ ENV JAVA_OPTS="-XX:+UseG1GC \
 ENV SPRING_PROFILES_ACTIVE=prod
 
 
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS} -jar /app/app.jar"]
 
