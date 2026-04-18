@@ -233,7 +233,7 @@ public class ProductSearchService {
      * RAG 智能搜索（流式）：向量检索 + LLM 流式推荐。
      * <p>
      * 先执行语义检索获取候选商品，再以 SSE 方式逐 token 推送 LLM 的推荐文案。
-     * 前端应先调用 {@code /api/v1/search} 获取商品列表，再调用此方法获取 AI 推荐。
+     * 前端应先调用 {@code /v1/customer/search} 获取商品列表，再调用此方法获取 AI 推荐。
      * </p>
      *
      * @param query 用户自然语言搜索词

@@ -15,7 +15,7 @@ import java.util.*;
  */
 @Hidden
 @RestController
-@RequestMapping("/api/v1/intent/test")
+@RequestMapping("/v1/customer/intent/test")
 @org.springframework.context.annotation.Profile("local")
 public class TestIntentController {
 
@@ -28,7 +28,7 @@ public class TestIntentController {
 
     /**
      * 完整意图解析（RAG + LLM），非流式返回。
-     * 示例: GET /api/v1/intent/test?query=200元左右的景德镇青瓷茶杯
+     * 示例: GET /v1/customer/intent/test?query=200元左右的景德镇青瓷茶杯
      */
     @GetMapping
     public Mono<Map<String, Object>> testParseIntent(@RequestParam("query") String query) {
@@ -53,7 +53,7 @@ public class TestIntentController {
 
     /**
      * 仅 RAG 向量检索（不调 LLM），验证 Mock 数据是否加载正确。
-     * 示例: GET /api/v1/intent/test/rag?query=茶杯
+     * 示例: GET /v1/customer/intent/test/rag?query=茶杯
      */
     @GetMapping("/rag")
     public Mono<Map<String, Object>> testRagSearch(@RequestParam("query") String query) {

@@ -17,6 +17,8 @@ springdoc:
     path: /v3/api-docs
 
 spring:
+  webflux:
+    base-path: /search-agent
   application:
     name: ceramicraft-search-intention-agent
   # 默认激活 local 环境（部署时通过 SPRING_PROFILES_ACTIVE=prod 覆盖）
@@ -99,7 +101,7 @@ ceramic:
     cache-ttl-days: ${CERAMIC_TAGGING_CACHE_TTL_DAYS:7}
   kafka:
     topic:
-      product-search: ${CERAMIC_KAFKA_TOPIC_SEARCH:product.search}
+      product-search: ${CERAMIC_KAFKA_TOPIC_SEARCH:product_changed}
   # ⚠️ MLflow tracking-uri 由各 profile 单独配置（local / prod 地址不同）
   mlflow:
     enabled: ${MLFLOW_TRACING_ENABLED:true}

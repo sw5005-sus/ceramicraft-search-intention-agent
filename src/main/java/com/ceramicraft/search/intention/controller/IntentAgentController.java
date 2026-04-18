@@ -19,7 +19,7 @@ import java.time.Duration;
 
 @Tag(name = "Intent Analysis", description = "Search intent RAG + LLM analysis (SSE streaming)")
 @RestController
-@RequestMapping("/api/v1/intent")
+@RequestMapping("/v1/customer/intent")
 public class IntentAgentController {
 
     private static final Logger log = LoggerFactory.getLogger(IntentAgentController.class);

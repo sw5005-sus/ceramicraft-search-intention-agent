@@ -46,8 +46,8 @@ USER appuser
 EXPOSE 8070
 
 # 健康检查（依赖 Actuator /actuator/health 端点）
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD curl -fs http://localhost:8070/actuator/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8070/search-agent/actuator/health || exit 1
 
 # JVM 调优参数
 ENV JAVA_OPTS="-XX:+UseG1GC \
@@ -57,6 +57,7 @@ ENV JAVA_OPTS="-XX:+UseG1GC \
 
 # 默认启用 prod 环境（部署时可通过 -e SPRING_PROFILES_ACTIVE=xxx 覆盖）
 ENV SPRING_PROFILES_ACTIVE=prod
+
 
 ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} org.springframework.boot.loader.launch.JarLauncher"]
 

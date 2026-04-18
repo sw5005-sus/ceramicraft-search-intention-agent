@@ -25,7 +25,7 @@ public class KafkaConfig {
 
     private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 
-    @Value("${ceramic.kafka.topic.product-search:product.search}")
+    @Value("${ceramic.kafka.topic.product-search:product_changed}")
     private String productSearchTopic;
 
     @Bean

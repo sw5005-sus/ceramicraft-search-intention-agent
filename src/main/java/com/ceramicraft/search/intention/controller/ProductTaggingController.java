@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Tag(name = "Product Tagging", description = "AI-powered product auto-tagging (non-streaming and SSE streaming)")
 @RestController
-@RequestMapping("/api/v1/tagging")
+@RequestMapping("/v1/customer/tagging")
 public class ProductTaggingController {
 
     private static final Logger log = LoggerFactory.getLogger(ProductTaggingController.class);

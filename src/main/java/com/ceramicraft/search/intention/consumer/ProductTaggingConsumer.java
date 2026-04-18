@@ -14,7 +14,7 @@ import jakarta.annotation.PostConstruct;
 /**
  * 商品变更 Kafka 消费者。
  * <p>
- * 监听 {@code product.search} Topic，根据操作类型执行相应处理：
+ * 监听 {@code product_changed} Topic，根据操作类型执行相应处理：
  * <ul>
  *   <li>{@code upload} — 新商品上架：从商品 API 拉取完整数据 → LLM 打标 → 写入向量库</li>
  *   <li>{@code update} — 商品更新：重新拉取 → 打标 → 覆盖写入向量库</li>
@@ -41,7 +41,7 @@ public class ProductTaggingConsumer {
 
     @PostConstruct
     public void init() {
-        log.info("✅ [Kafka Consumer] ProductTaggingConsumer 已创建，监听 Topic: product.search");
+        log.info("✅ [Kafka Consumer] ProductTaggingConsumer 已创建，监听 Topic: product_changed");
     }
 
     /**
@@ -52,7 +52,7 @@ public class ProductTaggingConsumer {
      */
     @KafkaListener(
             id = "product-search-listener",
-            topics = "${ceramic.kafka.topic.product-search:product.search}",
+            topics = "${ceramic.kafka.topic.product-search:product_changed}",
             groupId = "ceramic-product-search-group",
             concurrency = "1"
     )

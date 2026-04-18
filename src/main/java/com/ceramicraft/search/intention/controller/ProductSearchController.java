@@ -23,7 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/search")
+@RequestMapping("/v1/customer/search")
 @Tag(name = "Product Search", description = "Semantic search, history, hot searches, and smart suggestions")
 public class ProductSearchController {
 
@@ -44,7 +44,7 @@ public class ProductSearchController {
     // ==================== 语义搜索 ====================
 
     @Operation(summary = "Semantic product search",
-            description = "Natural language query -> vector semantic matching. Pass X-User-Id header to record search history.")
+            description = "Natural language query -> vector semantic matching. Pass X-Original-User-ID header to record search history.")
     @GetMapping
     public Mono<SearchResponse> search(
             @Parameter(description = "Natural language search query", example = "handmade celadon teacup")
@@ -52,7 +52,7 @@ public class ProductSearchController {
             @Parameter(description = "Max results (1~50)", example = "10")
             @RequestParam(value = "limit", defaultValue = "10") int limit,
             @Parameter(description = "User ID for search history (optional)")
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+            @RequestHeader(value = "X-Original-User-ID", required = false) String userId) {
 
         // ===== Prompt Injection 防护 =====
         String safeQuery = PromptGuardUtils.sanitizeQuery(query);
@@ -125,7 +125,7 @@ public class ProductSearchController {
             @Parameter(description = "Max results (1~20)", example = "5")
             @RequestParam(value = "limit", defaultValue = "5") int limit,
             @Parameter(description = "User ID for search history (optional)")
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+            @RequestHeader(value = "X-Original-User-ID", required = false) String userId) {
 
         // ===== Prompt Injection 防护 =====
         String safeQuery = PromptGuardUtils.sanitizeQuery(query);
@@ -159,7 +159,7 @@ public class ProductSearchController {
 
     @Operation(summary = "RAG-powered search recommendation (SSE streaming)",
             description = "Streams AI recommendation text via SSE based on vector-retrieved products. "
-                    + "Use alongside GET /api/v1/search for two-phase rendering: "
+                    + "Use alongside GET /v1/customer/search for two-phase rendering:"
                     + "fast product list + async AI recommendation. Cannot be tested in Swagger UI.")
     @GetMapping(value = "/rag/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> ragSearchStream(
@@ -210,11 +210,11 @@ public class ProductSearchController {
     // ==================== 搜索历史（需登录） ====================
 
     @Operation(summary = "Get user search history",
-            description = "Returns the user's recent search history. Requires X-User-Id header.")
+            description = "Returns the user's recent search history. Requires X-Original-User-ID header.")
     @GetMapping("/history")
     public Mono<Map<String, Object>> getHistory(
             @Parameter(description = "User ID", required = true, example = "user-001")
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Original-User-ID") String userId,
             @Parameter(description = "Max history items (1~50)", example = "10")
             @RequestParam(value = "limit", defaultValue = "10") int limit) {
 
@@ -230,11 +230,11 @@ public class ProductSearchController {
     }
 
     @Operation(summary = "Clear user search history",
-            description = "Deletes all search history for the specified user. Requires X-User-Id header.")
+            description = "Deletes all search history for the specified user. Requires X-Original-User-ID header.")
     @DeleteMapping("/history")
     public Mono<Map<String, Object>> clearHistory(
             @Parameter(description = "User ID", required = true, example = "user-001")
-            @RequestHeader("X-User-Id") String userId) {
+            @RequestHeader("X-Original-User-ID") String userId) {
 
         return historyService.clearHistory(userId)
                 .then(Mono.fromSupplier(() -> {
@@ -272,7 +272,7 @@ public class ProductSearchController {
     @GetMapping("/suggestions")
     public Mono<SuggestionResponse> getSuggestions(
             @Parameter(description = "User ID (optional)")
-            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestHeader(value = "X-Original-User-ID", required = false) String userId,
             @Parameter(description = "Number of suggestions (1~15)", example = "8")
             @RequestParam(value = "limit", defaultValue = "8") int limit) {
 
@@ -301,7 +301,7 @@ public class ProductSearchController {
     @GetMapping(value = "/suggestions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> streamSuggestions(
             @Parameter(description = "User ID (optional)")
-            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestHeader(value = "X-Original-User-ID", required = false) String userId,
             @Parameter(description = "Number of suggestions (1~15)", example = "6")
             @RequestParam(value = "limit", defaultValue = "6") int limit) {
 
