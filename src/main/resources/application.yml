@@ -1,0 +1,109 @@
+# ====================================================================
+# ceramicraft-search-intention-agent 公共配置
+# 环境差异配置见 application-local.yml / application-prod.yml
+# ====================================================================
+
+server:
+  port: 8070
+
+# ====================================================================
+# SpringDoc OpenAPI / Swagger UI
+# ====================================================================
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+spring:
+  webflux:
+    base-path: /search-agent
+  application:
+    name: ceramicraft-search-intention-agent
+  # 默认激活 local 环境（部署时通过 SPRING_PROFILES_ACTIVE=prod 覆盖）
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  # -------------------- Spring AI：OpenAI --------------------
+  ai:
+    openai:
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      api-key: ${OPENAI_API_KEY:}
+      chat:
+        options:
+          model: ${LLM_MODEL_NAME:gpt-4o}
+          temperature: 0.3
+          max-tokens: 2048
+
+    # -------------------- Redis Vector Store --------------------
+    # ⚠️ uri 由各 profile 单独配置（local / prod 地址不同）
+    vectorstore:
+      redis:
+        index: ${REDIS_VECTOR_INDEX:ceramic-product-index}
+        prefix: "ceramic:"
+        initialize-schema: true
+
+  # -------------------- 响应式 Redis（Lettuce，用于通用缓存） --------------------
+  # ⚠️ host / port / password 由各 profile 单独配置
+  data:
+    redis:
+      password: ${REDIS_PASSWORD:}
+
+  # -------------------- Kafka：商品数据异步打标管道 --------------------
+  # ⚠️ bootstrap-servers 由各 profile 单独配置
+  kafka:
+    consumer:
+      group-id: ceramic-tagging-group-v2
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+# ====================================================================
+# 可观测性配置
+# ====================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  tracing:
+    enabled: true
+  # OTLP 导出：Trace 通过 OtlpHttpSpanExporter 推送到 MLflow /v1/traces（见 MlflowTracingConfig）
+  otlp:
+    metrics:
+      export:
+        enabled: false
+
+# ====================================================================
+# 陶瓷搜索意图 Agent 自定义配置
+# ====================================================================
+ceramic:
+  intent:
+    system-prompt: ${CERAMIC_INTENT_SYSTEM_PROMPT:}
+    rag-top-k: ${CERAMIC_INTENT_RAG_TOP_K:5}
+    similarity-threshold: ${CERAMIC_INTENT_SIMILARITY_THRESHOLD:0.75}
+    query-enhance-enabled: ${CERAMIC_QUERY_ENHANCE_ENABLED:true}
+    # ⚠️ language 由各 profile 单独配置（local=zh, prod=en）
+    language: ${CERAMIC_LANGUAGE:en}
+  # ⚠️ product-api base-url 由各 profile 单独配置
+  product-api:
+    path: /product-ms/v1/customer/products
+    page-size: 10
+    sync-on-startup: ${CERAMIC_SYNC_ON_STARTUP:true}
+    sync-cron: ${CERAMIC_SYNC_CRON:0 0 3 * * ?}
+    retry:
+      max-attempts: ${CERAMIC_SYNC_RETRY_MAX:3}
+      delay-seconds: ${CERAMIC_SYNC_RETRY_DELAY:10}
+    sync-concurrency: ${CERAMIC_SYNC_CONCURRENCY:2}
+    sync-delay-ms: ${CERAMIC_SYNC_DELAY_MS:1500}
+  tagging:
+    cache-ttl-days: ${CERAMIC_TAGGING_CACHE_TTL_DAYS:7}
+  kafka:
+    topic:
+      product-search: ${CERAMIC_KAFKA_TOPIC_SEARCH:product_changed}
+  # ⚠️ MLflow tracking-uri 由各 profile 单独配置（local / prod 地址不同）
+  mlflow:
+    enabled: ${MLFLOW_TRACING_ENABLED:true}
+    experiment-name: ${MLFLOW_EXPERIMENT_NAME:ceramicraft-search-agent}
+

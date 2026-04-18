@@ -1,0 +1,93 @@
+# ====================================================================
+# ceramicraft-search-intention-agent 本地开发环境
+# 包含：Redis Stack (带 RediSearch 向量搜索) + Kafka (KRaft 模式，无需 ZooKeeper)
+#
+# 启动命令：docker compose up -d
+# 停止命令：docker compose down
+# 清除数据：docker compose down -v
+#
+# 【国内用户】如果拉取 Kafka 镜像失败，请先配置 Docker 镜像加速：
+#   1. 打开 Docker Desktop → Settings → Docker Engine
+#   2. 在 JSON 中添加：
+#      "registry-mirrors": [
+#        "https://docker.1ms.run",
+#        "https://docker.xuanyuan.me"
+#      ]
+#   3. 点击 Apply & Restart，然后重新执行 docker compose up -d
+# ====================================================================
+
+services:
+
+  # ==================== Redis Stack ====================
+  # 内置 RediSearch + RedisJSON 模块，支持向量搜索
+  # 端口：6379（Redis）、8001（RedisInsight Web UI）
+  redis:
+    image: redis/redis-stack:latest
+    container_name: ceramicraft-redis
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redis-data:/data
+    environment:
+      REDIS_ARGS: "--appendonly yes"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ==================== Kafka (KRaft 单节点) ====================
+  # 使用 Apache 官方 Kafka 镜像，KRaft 模式，无需 ZooKeeper
+  # 端口：9092（客户端连接）
+  kafka:
+    image: apache/kafka:3.8.1
+    container_name: ceramicraft-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft 模式配置
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      # 监听器配置
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      # Topic 自动创建
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # ⚠️ 单节点必须：内部 Topic 副本因子降为 1（默认 3 会导致 CoordinatorNotAvailable）
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # 日志保留（开发环境缩短）
+      KAFKA_LOG_RETENTION_HOURS: 24
+      # 集群 ID（KRaft 必需）
+      CLUSTER_ID: "ceramicraft-local-dev-001"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ==================== Kafka UI（可选，方便查看消息） ====================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: ceramicraft-kafka-ui
+    ports:
+      - "9090:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    profiles:
+      - ui
+
+volumes:
+  redis-data:
+

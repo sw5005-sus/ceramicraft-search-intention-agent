@@ -1,0 +1,63 @@
+name: Deploy to ArgoCD (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Docker image tag'
+        required: false
+        default: 'latest'
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Build Docker image
+        run: |
+          docker build -t "${DOCKER_HUB_USERNAME}/ceramicraft-search-intention-agent:${{ github.event.inputs.version }}" .
+      - name: Push to DockerHub
+        run: |
+          docker push "${DOCKER_HUB_USERNAME}/ceramicraft-search-intention-agent:${{ github.event.inputs.version }}"
+
+  update-argocd:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout argocd deploy repo
+        uses: actions/checkout@v4
+        with:
+          repository: sw5005-sus/ceramicraft-argocd-deploy
+          token: ${{ secrets.PAT_TOKEN }}
+          ref: main
+          path: argocd-deploy
+      - name: Update values.yaml tag
+        run: |
+          cd argocd-deploy/helm_backend/search-intention-agent-ms
+          TAG="${{ github.event.inputs.version }}"
+          sed -i.bak "s|^  tag:.*|  tag: ${TAG}|" values.yaml
+          rm -f values.yaml.bak
+      - name: Commit and push changes
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          cd argocd-deploy
+          git config user.name "${GIT_AUTHOR_NAME}"
+          git config user.email "${GIT_AUTHOR_EMAIL}"
+          git add helm_backend/search-intention-agent-ms/values.yaml
+          git commit -m "chore(search-intention-agent-ms): bump tag to ${{ github.event.inputs.version }} [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:main

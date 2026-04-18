@@ -1,0 +1,29 @@
+# ==================== Docker Build 忽略文件 ====================
+# 减少构建上下文体积，加快构建速度
+
+# 构建产物（由 Docker 内部构建）
+target/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# 文档
+*.md
+LICENSE
+
+# 本地开发环境
+docker-compose.yml
+mlflow.db
+
+# OS
+.DS_Store
+Thumbs.db
+

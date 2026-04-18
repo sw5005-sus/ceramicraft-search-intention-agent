@@ -1,0 +1,63 @@
+# ====================================================================
+# 生产环境配置（profile: prod）
+# 启动方式：SPRING_PROFILES_ACTIVE=prod 或 --spring.profiles.active=prod
+# ====================================================================
+
+spring:
+  ai:
+    # 生产环境 API Key 必须通过环境变量 OPENAI_API_KEY 注入（无默认值，启动时未设则报错）
+    openai:
+      api-key: ${OPENAI_API_KEY}
+    # 生产环境：不记录 Prompt/Completion 内容到 Trace（隐私 & 性能）
+    chat:
+      observations:
+        include-completion: false
+        include-prompt: false
+    # -------------------- 生产 Redis Vector Store --------------------
+    vectorstore:
+      redis:
+        uri: ${REDIS_VECTOR_URL}
+
+  # -------------------- 生产 Redis（通用缓存） --------------------
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+
+  # -------------------- 生产 Kafka --------------------
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+# ====================================================================
+# 可观测性：生产环境降低采样率
+# ====================================================================
+management:
+  tracing:
+    sampling:
+      probability: 0.1    # 采样率 10%
+
+# ====================================================================
+# 生产环境：不启用代理（AWS EC2 可直连 OpenAI）
+# proxy.host 不设置 → HttpClientConfig 不生效（@ConditionalOnProperty）
+# ====================================================================
+
+# ====================================================================
+# 日志级别：生产环境精简日志
+# ====================================================================
+logging:
+  level:
+    org.springframework.kafka: WARN
+    org.apache.kafka: ERROR
+    com.ceramicraft: INFO
+
+# ====================================================================
+# 生产 MLflow & Product API 地址（必须通过环境变量注入）
+# ====================================================================
+ceramic:
+  intent:
+    language: en            # 生产环境：英文商品 → 英文提示词输出
+  mlflow:
+    tracking-uri: ${MLFLOW_TRACKING_URI}
+  product-api:
+    base-url: ${PRODUCT_API_BASE_URL}
+
