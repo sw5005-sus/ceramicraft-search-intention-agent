@@ -21,8 +21,8 @@ COPY src src
 RUN --mount=type=cache,target=/root/.m2/repository \
     chmod +x mvnw && ./mvnw package -DskipTests -B
 
-# 4) 解压分层 JAR（Spring Boot Layered Jar）
-RUN java -Djarmode=tools -jar target/*.jar extract --layers --destination extracted
+# 4) 解压分层 JAR（Spring Boot 3.2+ Layered Jar）
+RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
 
 # ==================== Stage 2: 运行 ====================
 FROM eclipse-temurin:17-jre
@@ -33,11 +33,8 @@ RUN groupadd --system appgroup && \
 
 WORKDIR /app
 
-# 按变更频率从低到高拷贝各层（最大化 Docker 缓存命中）
-COPY --from=builder /build/extracted/dependencies/ ./
-COPY --from=builder /build/extracted/spring-boot-loader/ ./
-COPY --from=builder /build/extracted/snapshot-dependencies/ ./
-COPY --from=builder /build/extracted/application/ ./
+# 拷贝解压后的应用（Spring Boot 3.2+ extract 输出结构）
+COPY --from=builder /build/extracted/ ./
 
 # 切换到非 root 用户
 USER appuser
