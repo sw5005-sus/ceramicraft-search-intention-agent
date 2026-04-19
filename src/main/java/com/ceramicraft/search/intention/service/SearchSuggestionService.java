@@ -92,6 +92,7 @@ public class SearchSuggestionService {
             ## Constraints
             - Recommended terms must relate to ceramics/pottery/porcelain
             - Do NOT recommend exact terms the user already searched
+            - ALL text in "keyword" and "reason" fields MUST follow the language directive below — no exceptions
             - Output ONLY the JSON array, no additional text
             """;
 
