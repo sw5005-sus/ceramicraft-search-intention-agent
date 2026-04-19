@@ -24,16 +24,19 @@ jobs:
           distribution: 'corretto'
           cache: maven
 
-      - name: Run tests with coverage
-        run: |
-          chmod +x mvnw
-          ./mvnw verify -B --no-transfer-progress
-
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@1a6d90ebcb0e6a6b1d87e37ba693fe453195ae25
+      - name: Build, test, coverage, and SonarQube scan
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          chmod +x mvnw
+          ./mvnw verify sonar:sonar -B --no-transfer-progress \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.projectKey=sw5005-sus_ceramicraft-search-intention-agent \
+            -Dsonar.organization=sw5005-sus \
+            -Dsonar.java.coveragePlugin=jacoco \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
       - name: SonarQube Quality Gate check
         uses: sonarsource/sonarqube-quality-gate-action@master
