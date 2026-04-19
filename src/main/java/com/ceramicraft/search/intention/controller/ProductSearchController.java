@@ -57,12 +57,12 @@ public class ProductSearchController {
         // ===== Prompt Injection 防护 =====
         String safeQuery = PromptGuardUtils.sanitizeQuery(query);
         if (!PromptGuardUtils.isValidQuery(safeQuery)) {
-            return Mono.just(SearchResponse.error(query, "请输入有效的搜索内容"));
+            return Mono.just(SearchResponse.error(query, "Please enter a valid search query"));
         }
         PromptGuardUtils.RiskLevel risk = PromptGuardUtils.detectRisk(safeQuery);
         if (risk == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ 搜索请求被拦截（Prompt Injection） — query: '{}', userId: {}", query, userId);
-            return Mono.just(SearchResponse.error(query, "搜索内容包含不允许的指令，请输入正常的商品搜索词"));
+            return Mono.just(SearchResponse.error(query, "Input contains disallowed instructions. Please enter a normal product search query"));
         }
 
         log.info("语义搜索请求 — query: '{}', limit: {}, userId: {}", safeQuery, limit, userId);
@@ -96,11 +96,11 @@ public class ProductSearchController {
         // ===== Prompt Injection 防护 =====
         String safeName = PromptGuardUtils.sanitizeQuery(productName);
         if (!PromptGuardUtils.isValidQuery(safeName)) {
-            return Mono.just(SearchResponse.error(productName, "请输入有效的商品名称"));
+            return Mono.just(SearchResponse.error(productName, "Please enter a valid product name"));
         }
         if (PromptGuardUtils.detectRisk(safeName) == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ 相似推荐请求被拦截 — productName: '{}'", productName);
-            return Mono.just(SearchResponse.error(productName, "输入内容包含不允许的指令"));
+            return Mono.just(SearchResponse.error(productName, "Input contains disallowed instructions"));
         }
 
         log.info("相似商品推荐 — productName: '{}', limit: {}", safeName, limit);
@@ -130,11 +130,11 @@ public class ProductSearchController {
         // ===== Prompt Injection 防护 =====
         String safeQuery = PromptGuardUtils.sanitizeQuery(query);
         if (!PromptGuardUtils.isValidQuery(safeQuery)) {
-            return Mono.just(SearchResponse.error(query, "请输入有效的搜索内容"));
+            return Mono.just(SearchResponse.error(query, "Please enter a valid search query"));
         }
         if (PromptGuardUtils.detectRisk(safeQuery) == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ RAG 搜索请求被拦截（Prompt Injection） — query: '{}', userId: {}", query, userId);
-            return Mono.just(SearchResponse.error(query, "搜索内容包含不允许的指令，请输入正常的商品搜索词"));
+            return Mono.just(SearchResponse.error(query, "Input contains disallowed instructions. Please enter a normal product search query"));
         }
 
         log.info("RAG 智能搜索请求 — query: '{}', limit: {}, userId: {}", safeQuery, limit, userId);
@@ -172,12 +172,12 @@ public class ProductSearchController {
         String safeQuery = PromptGuardUtils.sanitizeQuery(query);
         if (!PromptGuardUtils.isValidQuery(safeQuery)) {
             return Flux.just(ServerSentEvent.<String>builder()
-                    .event("error").data("请输入有效的搜索内容").build());
+                    .event("error").data("Please enter a valid search query").build());
         }
         if (PromptGuardUtils.detectRisk(safeQuery) == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ RAG 流式搜索被拦截（Prompt Injection） — query: '{}'", query);
             return Flux.just(ServerSentEvent.<String>builder()
-                    .event("error").data("搜索内容包含不允许的指令，请输入正常的商品搜索词").build());
+                    .event("error").data("Input contains disallowed instructions. Please enter a normal product search query").build());
         }
 
         log.info("RAG 流式搜索请求 — query: '{}', limit: {}", safeQuery, limit);
@@ -196,14 +196,14 @@ public class ProductSearchController {
                     log.error("RAG 流式搜索异常 — query: {}", query, ex);
                     return Flux.just(ServerSentEvent.<String>builder()
                             .event("error")
-                            .data("AI 推荐服务暂时不可用，请稍后重试。")
+                            .data("AI recommendation service temporarily unavailable. Please try again later.")
                             .build());
                 })
                 .timeout(Duration.ofSeconds(30))
                 .onErrorResume(java.util.concurrent.TimeoutException.class, ex ->
                         Flux.just(ServerSentEvent.<String>builder()
                                 .event("error")
-                                .data("AI 推荐生成超时，请稍后重试。")
+                                .data("AI recommendation timed out. Please try again later.")
                                 .build()));
     }
 
@@ -240,7 +240,7 @@ public class ProductSearchController {
                 .then(Mono.fromSupplier(() -> {
                     Map<String, Object> resp = new LinkedHashMap<>();
                     resp.put("code", 200);
-                    resp.put("message", "搜索历史已清空");
+                    resp.put("message", "Search history cleared");
                     resp.put("userId", userId);
                     return resp;
                 }));
@@ -286,9 +286,9 @@ public class ProductSearchController {
             return historyService.getRandomProductNames(safeLimit)
                     .map(names -> {
                         var items = names.stream()
-                                .map(name -> new SuggestionItem(name, "热门推荐", "DEFAULT"))
+                                .map(name -> new SuggestionItem(name, "Popular pick", "DEFAULT"))
                                 .toList();
-                        return SuggestionResponse.ok(null, items, "基于平台热门商品");
+                        return SuggestionResponse.ok(null, items, "Based on popular products");
                     });
         }
 
@@ -322,7 +322,7 @@ public class ProductSearchController {
                     return Flux.just(
                             ServerSentEvent.<String>builder()
                                     .event("error")
-                                    .data("推荐服务暂时不可用，请稍后重试。")
+                                    .data("Recommendation service temporarily unavailable. Please try again later.")
                                     .build()
                     );
                 })
@@ -330,7 +330,7 @@ public class ProductSearchController {
                 .onErrorResume(java.util.concurrent.TimeoutException.class, ex ->
                         Flux.just(ServerSentEvent.<String>builder()
                                 .event("error")
-                                .data("推荐生成超时，请稍后重试。")
+                                .data("Recommendation timed out. Please try again later.")
                                 .build()));
     }
 }

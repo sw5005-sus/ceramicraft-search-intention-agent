@@ -33,7 +33,7 @@ public record SearchResponse(
     public static SearchResponse ok(String query, List<ProductSearchItem> products) {
         return new SearchResponse(
                 200, query, products.size(), products, null,
-                "结果来自语义搜索索引，如需实时价格/库存请使用 id 查询商品服务"
+                "Results from semantic search index. For real-time price/stock, query the product service by ID."
         );
     }
 
@@ -42,7 +42,7 @@ public record SearchResponse(
                                                        String recommendation) {
         return new SearchResponse(
                 200, query, products.size(), products, recommendation,
-                "结果来自 AI RAG 智能推荐，包含语义检索 + LLM 推荐分析"
+                "Results from AI RAG recommendation, including semantic retrieval + LLM analysis."
         );
     }
 

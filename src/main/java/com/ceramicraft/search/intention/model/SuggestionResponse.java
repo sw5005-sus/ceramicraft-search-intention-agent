@@ -34,7 +34,7 @@ public record SuggestionResponse(
     /** 错误降级响应 */
     public static SuggestionResponse error(String userId, String errorMsg) {
         return new SuggestionResponse(500, userId, List.of(),
-                "推荐服务暂时不可用: " + errorMsg);
+                "Recommendation service temporarily unavailable: " + errorMsg);
     }
 }
 

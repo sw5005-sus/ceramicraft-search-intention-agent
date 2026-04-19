@@ -45,7 +45,7 @@ public class ProductTaggingController {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("code", 403);
             err.put("product_name", request.name());
-            err.put("error", "商品信息中包含不允许的指令内容");
+            err.put("error", "Product information contains disallowed instructions");
             return Mono.just(err);
         }
 
@@ -93,7 +93,7 @@ public class ProductTaggingController {
             log.warn("🛡️ 流式打标请求被拦截 — 商品: {}", name);
             return Flux.just(ServerSentEvent.<String>builder()
                     .event("error")
-                    .data("商品信息中包含不允许的指令内容")
+                    .data("Product information contains disallowed instructions")
                     .build());
         }
 
@@ -117,7 +117,7 @@ public class ProductTaggingController {
                     return Flux.just(
                             ServerSentEvent.<String>builder()
                                     .event("error")
-                                    .data("打标服务暂时不可用: " + ex.getMessage())
+                                    .data("Tagging service temporarily unavailable: " + ex.getMessage())
                                     .build()
                     );
                 });

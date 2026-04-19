@@ -1,0 +1,49 @@
+name: Snyk
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  snyk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: maven
+
+      - name: Ensure mvnw is executable
+        run: chmod +x mvnw
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Snyk test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          mkdir -p sarif-reports
+          snyk test --file=pom.xml --severity-threshold=high --sarif-file-output=sarif-reports/snyk-search-agent.sarif || true
+
+      - name: Upload Snyk SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: sarif-reports/snyk-search-agent.sarif
+
+      - name: Snyk monitor
+        run: snyk monitor --file=pom.xml
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
