@@ -46,11 +46,12 @@ public class SearchAgentTools {
         return docs.stream()
                 .map(doc -> {
                     var m = doc.getMetadata();
-                    return "Product: %s | Category: %s | Price: %s | Material: %s | Style: %s | Origin: %s | Tags: %s | Score: %.2f | Description: %s"
+                    String priceDisplay = formatPrice(m.getOrDefault("price", "0"));
+                    return "Product: %s | Category: %s | Price: $%s | Material: %s | Style: %s | Origin: %s | Tags: %s | Score: %.2f | Description: %s"
                             .formatted(
                                     m.getOrDefault("name", ""),
                                     m.getOrDefault("category", ""),
-                                    m.getOrDefault("price", ""),
+                                    priceDisplay,
                                     m.getOrDefault("material", ""),
                                     m.getOrDefault("style", ""),
                                     m.getOrDefault("origin", ""),
@@ -59,6 +60,15 @@ public class SearchAgentTools {
                                     doc.getText());
                 })
                 .collect(Collectors.joining("\n"));
+    }
+
+    private static String formatPrice(Object rawPrice) {
+        try {
+            int cents = Integer.parseInt(rawPrice.toString());
+            return "%.2f".formatted(cents / 100.0);
+        } catch (NumberFormatException e) {
+            return rawPrice.toString();
+        }
     }
 
     @Tool(description = "Get a user's recent search history. "
@@ -103,10 +113,10 @@ public class SearchAgentTools {
         return docs.stream()
                 .map(doc -> {
                     var m = doc.getMetadata();
-                    return "Product: %s | Price: %s | Material: %s | Style: %s"
+                    return "Product: %s | Price: $%s | Material: %s | Style: %s"
                             .formatted(
                                     m.getOrDefault("name", ""),
-                                    m.getOrDefault("price", ""),
+                                    formatPrice(m.getOrDefault("price", "0")),
                                     m.getOrDefault("material", ""),
                                     m.getOrDefault("style", ""));
                 })
