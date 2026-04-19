@@ -28,6 +28,9 @@ import java.util.Map;
 public class ProductSearchController {
 
     private static final Logger log = LoggerFactory.getLogger(ProductSearchController.class);
+    private static final String ERR_INVALID_QUERY = "Please enter a valid search query";
+    private static final String ERR_BLOCKED = "Input contains disallowed instructions. Please enter a normal product search query";
+    private static final String SSE_EVENT_ERROR = "error";
 
     private final ProductSearchService searchService;
     private final SearchHistoryService historyService;
@@ -57,12 +60,12 @@ public class ProductSearchController {
         // ===== Prompt Injection 防护 =====
         String safeQuery = PromptGuardUtils.sanitizeQuery(query);
         if (!PromptGuardUtils.isValidQuery(safeQuery)) {
-            return Mono.just(SearchResponse.error(query, "Please enter a valid search query"));
+            return Mono.just(SearchResponse.error(query, ERR_INVALID_QUERY));
         }
         PromptGuardUtils.RiskLevel risk = PromptGuardUtils.detectRisk(safeQuery);
         if (risk == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ 搜索请求被拦截（Prompt Injection） — query: '{}', userId: {}", query, userId);
-            return Mono.just(SearchResponse.error(query, "Input contains disallowed instructions. Please enter a normal product search query"));
+            return Mono.just(SearchResponse.error(query, ERR_BLOCKED));
         }
 
         log.info("语义搜索请求 — query: '{}', limit: {}, userId: {}", safeQuery, limit, userId);
@@ -130,11 +133,11 @@ public class ProductSearchController {
         // ===== Prompt Injection 防护 =====
         String safeQuery = PromptGuardUtils.sanitizeQuery(query);
         if (!PromptGuardUtils.isValidQuery(safeQuery)) {
-            return Mono.just(SearchResponse.error(query, "Please enter a valid search query"));
+            return Mono.just(SearchResponse.error(query, ERR_INVALID_QUERY));
         }
         if (PromptGuardUtils.detectRisk(safeQuery) == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ RAG 搜索请求被拦截（Prompt Injection） — query: '{}', userId: {}", query, userId);
-            return Mono.just(SearchResponse.error(query, "Input contains disallowed instructions. Please enter a normal product search query"));
+            return Mono.just(SearchResponse.error(query, ERR_BLOCKED));
         }
 
         log.info("RAG 智能搜索请求 — query: '{}', limit: {}, userId: {}", safeQuery, limit, userId);
@@ -172,12 +175,12 @@ public class ProductSearchController {
         String safeQuery = PromptGuardUtils.sanitizeQuery(query);
         if (!PromptGuardUtils.isValidQuery(safeQuery)) {
             return Flux.just(ServerSentEvent.<String>builder()
-                    .event("error").data("Please enter a valid search query").build());
+                    .event(SSE_EVENT_ERROR).data(ERR_INVALID_QUERY).build());
         }
         if (PromptGuardUtils.detectRisk(safeQuery) == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ RAG 流式搜索被拦截（Prompt Injection） — query: '{}'", query);
             return Flux.just(ServerSentEvent.<String>builder()
-                    .event("error").data("Input contains disallowed instructions. Please enter a normal product search query").build());
+                    .event(SSE_EVENT_ERROR).data(ERR_BLOCKED).build());
         }
 
         log.info("RAG 流式搜索请求 — query: '{}', limit: {}", safeQuery, limit);
@@ -195,14 +198,14 @@ public class ProductSearchController {
                 .onErrorResume(ex -> {
                     log.error("RAG 流式搜索异常 — query: {}", query, ex);
                     return Flux.just(ServerSentEvent.<String>builder()
-                            .event("error")
+                            .event(SSE_EVENT_ERROR)
                             .data("AI recommendation service temporarily unavailable. Please try again later.")
                             .build());
                 })
                 .timeout(Duration.ofSeconds(30))
                 .onErrorResume(java.util.concurrent.TimeoutException.class, ex ->
                         Flux.just(ServerSentEvent.<String>builder()
-                                .event("error")
+                                .event(SSE_EVENT_ERROR)
                                 .data("AI recommendation timed out. Please try again later.")
                                 .build()));
     }
@@ -321,7 +324,7 @@ public class ProductSearchController {
                     log.error("智能推荐流式异常 — userId: {}", userId, ex);
                     return Flux.just(
                             ServerSentEvent.<String>builder()
-                                    .event("error")
+                                    .event(SSE_EVENT_ERROR)
                                     .data("Recommendation service temporarily unavailable. Please try again later.")
                                     .build()
                     );
@@ -329,7 +332,7 @@ public class ProductSearchController {
                 .timeout(Duration.ofSeconds(30))
                 .onErrorResume(java.util.concurrent.TimeoutException.class, ex ->
                         Flux.just(ServerSentEvent.<String>builder()
-                                .event("error")
+                                .event(SSE_EVENT_ERROR)
                                 .data("Recommendation timed out. Please try again later.")
                                 .build()));
     }
