@@ -1,0 +1,20 @@
+# Transitive dependencies managed by Spring Boot/Spring AI BOM.
+# Cannot be upgraded independently without risking compatibility.
+# Will be resolved when Spring Boot 3.4.6+ / Spring AI 1.0.6+ releases.
+
+# protobuf-java 3.23.4 — pulled by grpc (via Spring AI Redis)
+CVE-2024-7254
+
+# netty 4.1.119 — pulled by Spring Boot WebFlux
+CVE-2026-33870
+CVE-2025-55163
+CVE-2026-33871
+
+# kafka-clients 3.8.1 — pulled by spring-kafka
+CVE-2026-35554
+
+# lz4-java 1.8.0 — pulled by kafka-clients
+CVE-2025-12183
+
+# spring-core 6.2.6 — managed by Spring Boot 3.4.5 BOM
+CVE-2025-41249

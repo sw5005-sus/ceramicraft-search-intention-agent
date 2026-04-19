@@ -22,6 +22,7 @@ import java.util.Map;
 public class ProductTaggingController {
 
     private static final Logger log = LoggerFactory.getLogger(ProductTaggingController.class);
+    private static final String KEY_ERROR = "error";
 
     private final ProductTaggingService taggingService;
 
@@ -45,7 +46,7 @@ public class ProductTaggingController {
             Map<String, Object> err = new LinkedHashMap<>();
             err.put("code", 403);
             err.put("product_name", request.name());
-            err.put("error", "商品信息中包含不允许的指令内容");
+            err.put(KEY_ERROR, "Product information contains disallowed instructions");
             return Mono.just(err);
         }
 
@@ -67,7 +68,7 @@ public class ProductTaggingController {
                     Map<String, Object> err = new LinkedHashMap<>();
                     err.put("code", 500);
                     err.put("product_name", request.name());
-                    err.put("error", ex.getMessage());
+                    err.put(KEY_ERROR, ex.getMessage());
                     return Mono.just(err);
                 });
     }
@@ -92,8 +93,8 @@ public class ProductTaggingController {
         if (PromptGuardUtils.detectRisk(combinedInput) == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ 流式打标请求被拦截 — 商品: {}", name);
             return Flux.just(ServerSentEvent.<String>builder()
-                    .event("error")
-                    .data("商品信息中包含不允许的指令内容")
+                    .event(KEY_ERROR)
+                    .data("Product information contains disallowed instructions")
                     .build());
         }
 
@@ -116,8 +117,8 @@ public class ProductTaggingController {
                     log.error("流式打标异常 — 商品: {}", name, ex);
                     return Flux.just(
                             ServerSentEvent.<String>builder()
-                                    .event("error")
-                                    .data("打标服务暂时不可用: " + ex.getMessage())
+                                    .event(KEY_ERROR)
+                                    .data("Tagging service temporarily unavailable: " + ex.getMessage())
                                     .build()
                     );
                 });

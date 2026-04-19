@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.4</version>
+        <version>3.4.5</version>
         <relativePath/>
     </parent>
 
@@ -22,7 +22,7 @@
     <!-- ==================== 全局属性 ==================== -->
     <properties>
         <java.version>17</java.version>
-        <spring-ai.version>1.0.1</spring-ai.version>
+        <spring-ai.version>1.0.5</spring-ai.version>
     </properties>
 
     <!-- ==================== 依赖版本管理 ==================== -->
@@ -143,6 +143,26 @@
                 <configuration>
                     <release>${java.version}</release>
                 </configuration>
+            </plugin>
+            <!-- JaCoCo 代码覆盖率（Sonar 使用） -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

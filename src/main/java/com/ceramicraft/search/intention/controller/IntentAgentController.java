@@ -44,14 +44,14 @@ public class IntentAgentController {
         if (!PromptGuardUtils.isValidQuery(safeQuery)) {
             return Flux.just(ServerSentEvent.<String>builder()
                     .event("error")
-                    .data("请输入有效的搜索内容")
+                    .data("Please enter a valid search query")
                     .build());
         }
         if (PromptGuardUtils.detectRisk(safeQuery) == PromptGuardUtils.RiskLevel.BLOCKED) {
             log.warn("🛡️ 意图解析请求被拦截（Prompt Injection） — query: '{}'", query);
             return Flux.just(ServerSentEvent.<String>builder()
                     .event("error")
-                    .data("搜索内容包含不允许的指令，请输入正常的商品搜索词")
+                    .data("Input contains disallowed instructions. Please enter a normal product search query")
                     .build());
         }
 
@@ -79,7 +79,7 @@ public class IntentAgentController {
                     return Flux.just(
                             ServerSentEvent.<String>builder()
                                     .event("error")
-                                    .data("意图解析服务暂时不可用，请稍后重试。错误摘要: " + ex.getMessage())
+                                    .data("Intent analysis service temporarily unavailable. Error: " + ex.getMessage())
                                     .build()
                     );
                 })
@@ -92,7 +92,7 @@ public class IntentAgentController {
                     return Flux.just(
                             ServerSentEvent.<String>builder()
                                     .event("error")
-                                    .data("意图解析超时，请缩短查询内容后重试。")
+                                    .data("Intent analysis timed out. Please try a shorter query.")
                                     .build()
                     );
                 });
