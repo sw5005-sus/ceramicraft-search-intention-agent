@@ -47,7 +47,7 @@ class SearchAgentToolsTest {
 
         assertTrue(result.contains("Celadon Teacup"));
         assertTrue(result.contains("celadon"));
-        assertTrue(result.contains("$1.28"));
+        assertTrue(result.contains("S$1.28"));
     }
 
     @Test

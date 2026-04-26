@@ -62,7 +62,7 @@ public class CeramicVectorStoreConfig {
      *
      * <h3>注册的 Metadata 字段：</h3>
      * <ul>
-     *   <li><b>price</b>    — NUMERIC：商品价格（人民币元），支持范围过滤</li>
+     *   <li><b>price</b>    — NUMERIC：商品价格（新加坡元分），支持范围过滤</li>
      *   <li><b>material</b> — TEXT：材质（如青瓷、紫砂、骨瓷），支持全文匹配</li>
      *   <li><b>style</b>    — TEXT：风格（如中式古典、日式简约），支持全文匹配</li>
      *   <li><b>category</b> — TEXT：商品类目（如茶杯、花瓶），支持全文匹配</li>

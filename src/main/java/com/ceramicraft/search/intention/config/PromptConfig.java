@@ -113,7 +113,7 @@ public record PromptConfig(
                     ## Language Setting
                     - Output language: **English**
                     - ALL field values (tags, keywords, descriptions, enrichedDescription, reason, etc.) MUST be in English.
-                    - Currency unit: USD ($).
+                    - Currency unit: Singapore dollars (SGD, S$).
                     - Do NOT output any Chinese characters in the JSON values.
                     """;
         } else if ("zh".equalsIgnoreCase(language)) {
@@ -122,7 +122,7 @@ public record PromptConfig(
                     ## 语言设置
                     - 输出语言：**中文**
                     - 所有字段值（标签、关键词、描述、enrichedDescription、reason 等）必须使用中文。
-                    - 货币单位：人民币（元）。
+                    - 货币单位：新加坡元（SGD，S$）。
                     """;
         } else {
             // auto 模式：跟随输入语言
