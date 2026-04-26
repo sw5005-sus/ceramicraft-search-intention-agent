@@ -53,7 +53,8 @@ class SearchAgentEvaluationTest {
     @DisplayName("RAG recommendation should be relevant to user query")
     void ragRecommendation_shouldBeRelevant() {
         String userQuery = "premium celadon teacup as gift for elders";
-        String aiResponse = "For a premium gift, I'd recommend the Jingdezhen Celadon Teacup (SGD 85.00) — "
+        String aiResponse = "For your request for a premium celadon teacup gift for elders, "
+                + "I'd recommend the Jingdezhen Celadon Teacup (SGD 85.00) — "
                 + "its traditional craftsmanship and elegant glaze make it perfect for elders. "
                 + "The Longquan Celadon Tea Set (SGD 120.00) is also excellent if budget allows.";
 
@@ -74,7 +75,8 @@ class SearchAgentEvaluationTest {
                 new Document("Longquan Celadon Tea Set — includes teapot and 6 cups, SGD 120.00",
                         Map.of("name", "Longquan Celadon Tea Set", "price", "12000", "material", "celadon"))
         );
-        String aiResponse = "For a premium gift, I'd recommend the Jingdezhen Celadon Teacup (SGD 85.00) — "
+        String aiResponse = "For your request for a premium celadon teacup gift for elders, "
+                + "I'd recommend the Jingdezhen Celadon Teacup (SGD 85.00) — "
                 + "its traditional craftsmanship and elegant glaze make it perfect for elders. "
                 + "The Longquan Celadon Tea Set (SGD 120.00) is also excellent if budget allows.";
 
