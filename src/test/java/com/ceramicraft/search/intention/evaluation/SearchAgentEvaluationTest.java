@@ -53,9 +53,9 @@ class SearchAgentEvaluationTest {
     @DisplayName("RAG recommendation should be relevant to user query")
     void ragRecommendation_shouldBeRelevant() {
         String userQuery = "premium celadon teacup as gift for elders";
-        String aiResponse = "For a premium gift, I'd recommend the Jingdezhen Celadon Teacup (S$85.00) — "
+        String aiResponse = "For a premium gift, I'd recommend the Jingdezhen Celadon Teacup (SGD 85.00) — "
                 + "its traditional craftsmanship and elegant glaze make it perfect for elders. "
-                + "The Longquan Celadon Tea Set (S$120.00) is also excellent if budget allows.";
+                + "The Longquan Celadon Tea Set (SGD 120.00) is also excellent if budget allows.";
 
         var evaluator = new RelevancyEvaluator(chatClientBuilder);
         var request = new EvaluationRequest(userQuery, aiResponse);
@@ -69,14 +69,14 @@ class SearchAgentEvaluationTest {
     @DisplayName("RAG recommendation should be grounded in retrieved product data")
     void ragRecommendation_shouldBeFactual() {
         List<Document> retrievedProducts = List.of(
-                new Document("Jingdezhen Celadon Teacup — handmade, traditional glaze, S$85.00",
+                new Document("Jingdezhen Celadon Teacup — handmade, traditional glaze, SGD 85.00",
                         Map.of("name", "Jingdezhen Celadon Teacup", "price", "8500", "material", "celadon")),
-                new Document("Longquan Celadon Tea Set — includes teapot and 6 cups, S$120.00",
+                new Document("Longquan Celadon Tea Set — includes teapot and 6 cups, SGD 120.00",
                         Map.of("name", "Longquan Celadon Tea Set", "price", "12000", "material", "celadon"))
         );
-        String aiResponse = "For a premium gift, I'd recommend the Jingdezhen Celadon Teacup (S$85.00) — "
+        String aiResponse = "For a premium gift, I'd recommend the Jingdezhen Celadon Teacup (SGD 85.00) — "
                 + "its traditional craftsmanship and elegant glaze make it perfect for elders. "
-                + "The Longquan Celadon Tea Set (S$120.00) is also excellent if budget allows.";
+                + "The Longquan Celadon Tea Set (SGD 120.00) is also excellent if budget allows.";
 
         var evaluator = new FactCheckingEvaluator(chatClientBuilder);
         var request = new EvaluationRequest(retrievedProducts, aiResponse);
@@ -90,12 +90,12 @@ class SearchAgentEvaluationTest {
     @DisplayName("Hallucinated recommendation should fail fact checking")
     void hallucination_shouldFailFactCheck() {
         List<Document> retrievedProducts = List.of(
-                new Document("Blue-and-white bowl — Chinese classical style, S$35.00",
+                new Document("Blue-and-white bowl — Chinese classical style, SGD 35.00",
                         Map.of("name", "Blue-and-white bowl", "price", "3500"))
         );
-        String hallucinatedResponse = "I recommend the Royal Doulton Fine China Set (S$500.00) — "
+        String hallucinatedResponse = "I recommend the Royal Doulton Fine China Set (SGD 500.00) — "
                 + "a premium British porcelain collection perfect for formal dining. "
-                + "Also consider the Wedgwood Jasperware Vase (S$350.00).";
+                + "Also consider the Wedgwood Jasperware Vase (SGD 350.00).";
 
         var evaluator = new FactCheckingEvaluator(chatClientBuilder);
         var request = new EvaluationRequest(retrievedProducts, hallucinatedResponse);

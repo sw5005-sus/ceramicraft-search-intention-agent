@@ -47,7 +47,7 @@ public class SearchAgentTools {
                 .map(doc -> {
                     var m = doc.getMetadata();
                     String priceDisplay = formatPrice(m.getOrDefault("price", "0"));
-                    return "Product: %s | Category: %s | Price: S$%s | Material: %s | Style: %s | Origin: %s | Tags: %s | Score: %.2f | Description: %s"
+                    return "Product: %s | Category: %s | Price: SGD %s | Material: %s | Style: %s | Origin: %s | Tags: %s | Score: %.2f | Description: %s"
                             .formatted(
                                     m.getOrDefault("name", ""),
                                     m.getOrDefault("category", ""),
@@ -113,7 +113,7 @@ public class SearchAgentTools {
         return docs.stream()
                 .map(doc -> {
                     var m = doc.getMetadata();
-                    return "Product: %s | Price: S$%s | Material: %s | Style: %s"
+                    return "Product: %s | Price: SGD %s | Material: %s | Style: %s"
                             .formatted(
                                     m.getOrDefault("name", ""),
                                     formatPrice(m.getOrDefault("price", "0")),
